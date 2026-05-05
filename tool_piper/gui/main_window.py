@@ -38,6 +38,7 @@ from tool_piper.constants import DEFAULT_ASSETS_ROOT, DEFAULT_LEROBOT_ROOT, DEFA
 from tool_piper.gui.formatting import (
     command_build_observation,
     command_convert,
+    command_export_openpi_legacy,
     command_lerobot_check,
     command_norm_stats,
     command_policy_dry_run,
@@ -49,6 +50,7 @@ from tool_piper.gui.guide import copy_paths_guide, pc_training_guide, stage_hint
 from tool_piper.gui.workers import TaskWorker, run_in_thread
 from tool_piper.lerobot.convert import ConversionProgress, convert_raw_to_lerobot
 from tool_piper.lerobot.inspect import check_lerobot_dataset
+from tool_piper.lerobot.openpi_legacy import export_openpi_legacy_dataset
 from tool_piper.lerobot.replay import make_replay_video
 from tool_piper.model.observation import load_sample_observation, observation_summary
 from tool_piper.norm.stats import compute_norm_stats
@@ -194,9 +196,10 @@ class MainWindow(QMainWindow):
             ("1. Check Raw Data", self.run_raw_check),
             ("2. Convert to LeRobot", self.run_convert),
             ("3. Check LeRobot Dataset", self.run_lerobot_check),
-            ("4. Generate Replay Video", self.run_replay),
-            ("5. Compute Norm Stats", self.run_norm_stats),
-            ("6. Build Observation", self.run_build_observation),
+            ("4. Export OpenPI Legacy", self.run_export_openpi_legacy),
+            ("5. Generate Replay Video", self.run_replay),
+            ("6. Compute Norm Stats", self.run_norm_stats),
+            ("7. Build Observation", self.run_build_observation),
             ("Optional: Policy Dry Run", self.run_policy_dry_run),
             ("Open Output Folder", lambda: self.open_path(Path(self.outputs_root.text()))),
             ("Clear Current Outputs", self.clear_current_outputs),
@@ -332,7 +335,9 @@ class MainWindow(QMainWindow):
         repo_id = cfg["repo_id"]
         paths = [
             cfg["dataset_root"],
+            cfg["dataset_root"].parent / f"{repo_id}_openpi_legacy",
             cfg["assets_root"] / repo_id,
+            cfg["assets_root"] / f"{repo_id}_openpi_legacy",
             cfg["outputs_root"] / "replay" / repo_id,
         ]
         existing_paths = [path for path in paths if path.exists()]
@@ -539,6 +544,33 @@ class MainWindow(QMainWindow):
             "tool_piper.lerobot.inspect.check_lerobot_dataset(...) ",
             task,
             lambda _: self.show_stage_hint("lerobot-check"),
+        )
+
+    def run_export_openpi_legacy(self) -> None:
+        cfg = self.config_values()
+        output_root = cfg["dataset_root"].parent / f"{cfg['repo_id']}_openpi_legacy"
+        command = command_export_openpi_legacy(cfg["repo_id"], str(cfg["dataset_root"]), cfg["task"], str(output_root))
+
+        def task(worker: TaskWorker):
+            def progress(current: int, total: int, label: str, eta_seconds: float | None) -> None:
+                worker.signals.progress.emit(current, total, label, self.format_seconds(eta_seconds))
+
+            return export_openpi_legacy_dataset(
+                cfg["dataset_root"],
+                cfg["repo_id"],
+                cfg["task"],
+                output_root,
+                progress=progress,
+                cancel_check=worker.cancel_token.raise_if_cancelled,
+            )
+
+        self.start_task(
+            "Export OpenPI Legacy",
+            command,
+            "tool_piper.lerobot.openpi_legacy.export_openpi_legacy_dataset(...) ",
+            task,
+            lambda _: self.show_stage_hint("openpi-legacy"),
+            cleanup_paths=[output_root],
         )
 
     def run_replay(self) -> None:

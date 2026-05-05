@@ -46,6 +46,23 @@ def command_lerobot_check(repo_id: str, root: str) -> str:
     return shell_join(["tool-piper", "lerobot-check", "--repo-id", repo_id, "--root", root])
 
 
+def command_export_openpi_legacy(repo_id: str, root: str, task: str, output_root: str) -> str:
+    return shell_join(
+        [
+            "tool-piper",
+            "export-openpi-legacy",
+            "--repo-id",
+            repo_id,
+            "--root",
+            root,
+            "--task",
+            task,
+            "--output-root",
+            output_root,
+        ]
+    )
+
+
 def command_replay(repo_id: str, root: str, episode_index: int, max_frames: int | None) -> str:
     parts = ["tool-piper", "replay", "--repo-id", repo_id, "--root", root, "--episode-index", str(episode_index)]
     if max_frames is not None:

@@ -6,10 +6,12 @@ from pathlib import Path
 def stage_hint(stage: str, repo_id: str, task: str, dataset_root: Path, assets_root: Path, outputs_root: Path) -> str:
     norm_path = assets_root / repo_id / "norm_stats.json"
     replay_dir = outputs_root / "replay" / repo_id
+    legacy_root = dataset_root.parent / f"{repo_id}_openpi_legacy"
     hints = {
         "raw-check": f"Raw check finished. If ok, convert raw data to LeRobot for repo_id '{repo_id}'.",
         "convert": f"Conversion finished. LeRobot dataset is at:\n{dataset_root}\nNext: run LeRobot Check, Replay, and Norm Stats.",
-        "lerobot-check": "LeRobot check finished. If ok, the dataset can be read by LeRobot/OpenPI-compatible loaders.",
+        "lerobot-check": "LeRobot check finished. If ok, export OpenPI Legacy before using the current pinned OpenPI trainer.",
+        "openpi-legacy": f"OpenPI legacy export finished. Copy this dataset to PC OpenPI datasets and use repo_id '{repo_id}_openpi_legacy':\n{legacy_root}",
         "replay": f"Replay generation finished. Check videos under:\n{replay_dir}",
         "norm-stats": f"Norm stats finished. Use this file for OpenPI assets:\n{norm_path}",
         "observation": "Observation check finished. Model-ready keys should be state, images.cam_high, images.cam_left_wrist, and prompt.",

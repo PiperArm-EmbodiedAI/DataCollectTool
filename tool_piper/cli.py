@@ -8,6 +8,7 @@ from typing import Any
 from tool_piper.constants import DEFAULT_OUTPUTS_ROOT
 from tool_piper.lerobot.convert import convert_raw_to_lerobot
 from tool_piper.lerobot.inspect import check_lerobot_dataset
+from tool_piper.lerobot.openpi_legacy import export_openpi_legacy_dataset
 from tool_piper.lerobot.replay import make_replay_video
 from tool_piper.model.observation import load_sample_observation, observation_summary
 from tool_piper.norm.stats import compute_norm_stats
@@ -49,6 +50,17 @@ def lerobot_check(args: argparse.Namespace) -> None:
     print(_json(to_dict(report)))
     if args.out:
         print(f"report: {write_json_report(report, Path(args.out))}")
+
+
+def export_openpi_legacy(args: argparse.Namespace) -> None:
+    path = export_openpi_legacy_dataset(
+        source_root=Path(args.root),
+        repo_id=args.repo_id,
+        task=args.task,
+        output_root=Path(args.output_root) if args.output_root else None,
+        overwrite=not args.no_overwrite,
+    )
+    print(f"openpi_legacy_dataset: {path}")
 
 
 def replay(args: argparse.Namespace) -> None:
@@ -119,6 +131,14 @@ def build_parser() -> argparse.ArgumentParser:
     check_parser.add_argument("--root")
     check_parser.add_argument("--out")
     check_parser.set_defaults(func=lerobot_check)
+
+    legacy_parser = subparsers.add_parser("export-openpi-legacy", help="Export LeRobot 0.4 data as OpenPI legacy LeRobot")
+    legacy_parser.add_argument("--repo-id", required=True)
+    legacy_parser.add_argument("--root", required=True)
+    legacy_parser.add_argument("--task", required=True)
+    legacy_parser.add_argument("--output-root")
+    legacy_parser.add_argument("--no-overwrite", action="store_true")
+    legacy_parser.set_defaults(func=export_openpi_legacy)
 
     replay_parser = subparsers.add_parser("replay", help="Create replay mp4 with overlays")
     replay_parser.add_argument("--repo-id", required=True)
