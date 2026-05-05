@@ -58,6 +58,8 @@ def export_openpi_legacy(args: argparse.Namespace) -> None:
         repo_id=args.repo_id,
         task=args.task,
         output_root=Path(args.output_root) if args.output_root else None,
+        source_assets_root=Path(args.source_assets_root) if args.source_assets_root else None,
+        target_assets_root=Path(args.target_assets_root) if args.target_assets_root else None,
         overwrite=not args.no_overwrite,
     )
     print(f"openpi_legacy_dataset: {path}")
@@ -137,6 +139,8 @@ def build_parser() -> argparse.ArgumentParser:
     legacy_parser.add_argument("--root", required=True)
     legacy_parser.add_argument("--task", required=True)
     legacy_parser.add_argument("--output-root")
+    legacy_parser.add_argument("--source-assets-root")
+    legacy_parser.add_argument("--target-assets-root")
     legacy_parser.add_argument("--no-overwrite", action="store_true")
     legacy_parser.set_defaults(func=export_openpi_legacy)
 

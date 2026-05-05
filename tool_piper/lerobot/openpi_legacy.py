@@ -263,6 +263,21 @@ def _write_episode_parquets(
             progress(current, total, f"Writing legacy episode {episode_index}/{total - 1}: {table.num_rows} frames", None)
 
 
+def _write_openpi_norm_stats(source_assets_root: Path | None, target_assets_root: Path | None, repo_id: str) -> Path | None:
+    if source_assets_root is None or target_assets_root is None:
+        return None
+    source_path = Path(source_assets_root) / repo_id / "norm_stats.json"
+    if not source_path.exists():
+        return None
+    data = _read_json(source_path)
+    if "norm_stats" not in data:
+        data = {"norm_stats": data}
+    target_path = Path(target_assets_root) / f"{repo_id}_openpi_legacy" / "norm_stats.json"
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    target_path.write_text(json.dumps(_clean_json(data), ensure_ascii=False, indent=2))
+    return target_path
+
+
 def _write_metadata(
     source_root: Path,
     output_root: Path,
@@ -319,6 +334,8 @@ def export_openpi_legacy_dataset(
     repo_id: str,
     task: str,
     output_root: Path | None = None,
+    source_assets_root: Path | None = None,
+    target_assets_root: Path | None = None,
     overwrite: bool = True,
     progress: ProgressCallback | None = None,
     cancel_check: CancelCheck | None = None,
@@ -349,11 +366,15 @@ def export_openpi_legacy_dataset(
     if cancel_check is not None:
         cancel_check()
     if progress is not None:
-        progress(3, 4, "Writing OpenPI legacy metadata", None)
+        progress(3, 4, "Writing OpenPI legacy metadata and norm stats", None)
     _write_metadata(source_root, output_root, target_repo_id, task, tasks, episode_rows)
+    norm_stats_path = _write_openpi_norm_stats(source_assets_root, target_assets_root, repo_id)
 
     if cancel_check is not None:
         cancel_check()
     if progress is not None:
-        progress(4, 4, f"OpenPI legacy export complete: {output_root}", 0)
+        message = f"OpenPI legacy export complete: {output_root}"
+        if norm_stats_path is not None:
+            message += f" | assets: {norm_stats_path}"
+        progress(4, 4, message, 0)
     return output_root

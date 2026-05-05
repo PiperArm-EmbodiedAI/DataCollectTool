@@ -549,7 +549,14 @@ class MainWindow(QMainWindow):
     def run_export_openpi_legacy(self) -> None:
         cfg = self.config_values()
         output_root = cfg["dataset_root"].parent / f"{cfg['repo_id']}_openpi_legacy"
-        command = command_export_openpi_legacy(cfg["repo_id"], str(cfg["dataset_root"]), cfg["task"], str(output_root))
+        command = command_export_openpi_legacy(
+            cfg["repo_id"],
+            str(cfg["dataset_root"]),
+            cfg["task"],
+            str(output_root),
+            str(cfg["assets_root"]),
+            str(cfg["assets_root"]),
+        )
 
         def task(worker: TaskWorker):
             def progress(current: int, total: int, label: str, eta_seconds: float | None) -> None:
@@ -560,6 +567,8 @@ class MainWindow(QMainWindow):
                 cfg["repo_id"],
                 cfg["task"],
                 output_root,
+                source_assets_root=cfg["assets_root"],
+                target_assets_root=cfg["assets_root"],
                 progress=progress,
                 cancel_check=worker.cancel_token.raise_if_cancelled,
             )
@@ -570,7 +579,7 @@ class MainWindow(QMainWindow):
             "tool_piper.lerobot.openpi_legacy.export_openpi_legacy_dataset(...) ",
             task,
             lambda _: self.show_stage_hint("openpi-legacy"),
-            cleanup_paths=[output_root],
+            cleanup_paths=[output_root, cfg["assets_root"] / f"{cfg['repo_id']}_openpi_legacy"],
         )
 
     def run_replay(self) -> None:

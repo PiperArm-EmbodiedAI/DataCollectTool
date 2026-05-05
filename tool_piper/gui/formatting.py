@@ -46,7 +46,14 @@ def command_lerobot_check(repo_id: str, root: str) -> str:
     return shell_join(["tool-piper", "lerobot-check", "--repo-id", repo_id, "--root", root])
 
 
-def command_export_openpi_legacy(repo_id: str, root: str, task: str, output_root: str) -> str:
+def command_export_openpi_legacy(
+    repo_id: str,
+    root: str,
+    task: str,
+    output_root: str,
+    source_assets_root: str,
+    target_assets_root: str,
+) -> str:
     return shell_join(
         [
             "tool-piper",
@@ -59,6 +66,10 @@ def command_export_openpi_legacy(repo_id: str, root: str, task: str, output_root
             task,
             "--output-root",
             output_root,
+            "--source-assets-root",
+            source_assets_root,
+            "--target-assets-root",
+            target_assets_root,
         ]
     )
 
