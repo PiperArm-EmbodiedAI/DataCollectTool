@@ -61,29 +61,46 @@ ProgressCallback = Callable[[int, int, str, float | None], None]
 CancelCheck = Callable[[], None]
 
 
+def _parquet_paths(root: Path) -> list[Path]:
+    paths = sorted((root / "data").glob("chunk-*/*.parquet"))
+    if not paths:
+        raise FileNotFoundError(f"No parquet files found under {root / 'data'}")
+    return paths
+
+
 def _load_episode_samples(root: Path, episode_index: int, cancel_check: CancelCheck | None = None) -> list[dict[str, Any]]:
     try:
         import pyarrow.parquet as pq
     except Exception as exc:
         raise RuntimeError("pyarrow is required to read local LeRobot parquet files.") from exc
 
-    path = root / "data" / "chunk-000" / f"episode_{episode_index:06d}.parquet"
-    if not path.exists():
-        raise FileNotFoundError(f"Missing episode parquet: {path}")
-    if cancel_check is not None:
-        cancel_check()
-    table = pq.read_table(path)
     rows = []
-    for row_index in range(table.num_rows):
-        if cancel_check is not None and row_index % 100 == 0:
+    paths = _parquet_paths(root)
+    for path in paths:
+        if cancel_check is not None:
             cancel_check()
-        rows.append(
-            {
-                LEROBOT_TOP_KEY: table[LEROBOT_TOP_KEY][row_index].as_py(),
-                LEROBOT_WRIST_KEY: table[LEROBOT_WRIST_KEY][row_index].as_py(),
-                LEROBOT_STATE_KEY: table[LEROBOT_STATE_KEY][row_index].as_py(),
-                LEROBOT_ACTION_KEY: table[LEROBOT_ACTION_KEY][row_index].as_py(),
-            }
+        table = pq.read_table(path)
+        column_names = set(table.column_names)
+        has_episode_index = "episode_index" in column_names
+        for row_index in range(table.num_rows):
+            if cancel_check is not None and row_index % 100 == 0:
+                cancel_check()
+            if has_episode_index and int(table["episode_index"][row_index].as_py()) != episode_index:
+                continue
+            rows.append(
+                {
+                    LEROBOT_TOP_KEY: table[LEROBOT_TOP_KEY][row_index].as_py(),
+                    LEROBOT_WRIST_KEY: table[LEROBOT_WRIST_KEY][row_index].as_py(),
+                    LEROBOT_STATE_KEY: table[LEROBOT_STATE_KEY][row_index].as_py(),
+                    LEROBOT_ACTION_KEY: table[LEROBOT_ACTION_KEY][row_index].as_py(),
+                }
+            )
+    if not rows:
+        available = "\n".join(str(path.relative_to(root)) for path in paths[:20])
+        suffix = "" if len(paths) <= 20 else f"\n... and {len(paths) - 20} more"
+        raise FileNotFoundError(
+            f"No rows found for episode_index={episode_index} under {root / 'data'}.\n"
+            f"Available parquet files:\n{available}{suffix}"
         )
     return rows
 
