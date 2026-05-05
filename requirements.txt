@@ -1,9 +1,12 @@
-numpy
-opencv-python
+numpy>=1.26,<2
+opencv-python<4.12
+opencv-python-headless<4.12
+rerun-sdk<0.26
 pyarrow
 pandas
 tqdm
 msgpack
 websockets
-lerobot
+setuptools>=71,<81
+lerobot==0.1.0
 PySide6

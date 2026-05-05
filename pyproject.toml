@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=71,<81", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,14 +9,16 @@ description = "Standalone Piper data collection and processing toolchain"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "numpy",
-    "opencv-python",
+    "numpy>=1.26,<2",
+    "opencv-python<4.12",
+    "opencv-python-headless<4.12",
+    "rerun-sdk<0.26",
     "pyarrow",
     "pandas",
     "tqdm",
     "msgpack",
     "websockets",
-    "lerobot",
+    "lerobot==0.1.0",
 ]
 
 [project.optional-dependencies]

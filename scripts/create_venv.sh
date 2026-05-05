@@ -8,7 +8,8 @@ PYTHON_BIN="${PYTHON_BIN:-python3}"
 cd "$TOOL_DIR"
 "$PYTHON_BIN" -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip setuptools wheel
+python -m pip install --upgrade pip wheel
+python -m pip install "setuptools>=71,<81"
 python -m pip install -e ".[gui]"
 
 echo "Tool environment created at: $TOOL_DIR/.venv"
