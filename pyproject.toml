@@ -9,16 +9,15 @@ description = "Standalone Piper data collection and processing toolchain"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "numpy>=1.26,<2",
-    "opencv-python<4.12",
-    "opencv-python-headless<4.12",
-    "rerun-sdk<0.26",
+    "numpy>=2,<2.3",
+    "opencv-python-headless>=4.12,<4.13",
+    "rerun-sdk>=0.26,<0.27",
     "pyarrow",
     "pandas",
     "tqdm",
     "msgpack",
     "websockets",
-    "lerobot==0.1.0",
+    "lerobot==0.4.4",
 ]
 
 [project.optional-dependencies]

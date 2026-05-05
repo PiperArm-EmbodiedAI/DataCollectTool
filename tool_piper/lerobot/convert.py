@@ -85,9 +85,12 @@ def convert_raw_to_lerobot(
     cancel_check: Callable[[], None] | None = None,
 ) -> Path:
     try:
-        from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
-    except Exception as exc:
-        raise RuntimeError("LeRobot is required for conversion. Install Tool/requirements.txt in your environment.") from exc
+        from lerobot.datasets.lerobot_dataset import LeRobotDataset
+    except Exception:
+        try:
+            from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
+        except Exception as exc:
+            raise RuntimeError("LeRobot is required for conversion. Install Tool/requirements.txt in your environment.") from exc
 
     raw_root = Path(raw_root)
     dataset_root = Path(output_root) if output_root is not None else DEFAULT_LEROBOT_ROOT / repo_id

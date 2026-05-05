@@ -29,9 +29,12 @@ def check_lerobot_dataset(
     if progress is not None:
         progress(0, 4, "Importing LeRobot dataset support", None)
     try:
-        from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
-    except Exception as exc:
-        return GenericReport(ok=False, errors=[f"LeRobot import failed: {exc}"])
+        from lerobot.datasets.lerobot_dataset import LeRobotDataset
+    except Exception:
+        try:
+            from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
+        except Exception as exc:
+            return GenericReport(ok=False, errors=[f"LeRobot import failed: {exc}"])
 
     if root is None:
         from tool_piper.constants import DEFAULT_LEROBOT_ROOT
