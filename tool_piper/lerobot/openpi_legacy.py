@@ -136,6 +136,30 @@ def _episode_stats(row: dict[str, Any]) -> dict[str, Any]:
     return stats
 
 
+def _legacy_hf_features(features: dict[str, Any]) -> dict[str, Any]:
+    legacy = json.loads(json.dumps(_clean_json(features)))
+    for key in (LEROBOT_STATE_KEY, LEROBOT_ACTION_KEY):
+        feature = legacy.get(key)
+        if isinstance(feature, dict) and feature.get("_type") == "List":
+            feature["_type"] = "Sequence"
+    return legacy
+
+
+def _patch_table_huggingface_metadata(table: Any, features: dict[str, Any]) -> Any:
+    metadata = dict(table.schema.metadata or {})
+    payload = metadata.get(b"huggingface")
+    if payload is not None:
+        try:
+            info = json.loads(payload.decode("utf-8"))
+        except Exception:
+            info = {}
+    else:
+        info = {}
+    info.setdefault("info", {})["features"] = _legacy_hf_features(features)
+    metadata[b"huggingface"] = json.dumps(info, separators=(",", ":")).encode("utf-8")
+    return table.replace_schema_metadata(metadata)
+
+
 def _ensure_columns(table: Any, episode_index: int, global_start: int) -> Any:
     import pyarrow as pa
     import pyarrow.compute as pc
@@ -199,6 +223,7 @@ def _write_episode_parquets(
     data_files = _parquet_files(source_root, "data")
     data_tables = [pq.read_table(path) for path in data_files]
     source_table = pa.concat_tables(data_tables, promote_options="default")
+    legacy_features = _legacy_features(source_root)
     if "episode_index" not in source_table.column_names:
         raise KeyError("Source data parquet does not contain episode_index; cannot split legacy episodes.")
 
@@ -216,6 +241,7 @@ def _write_episode_parquets(
             )
         global_start = int(episode.get("dataset_from_index", 0) or 0)
         table = _ensure_columns(table, episode_index, global_start)
+        table = _patch_table_huggingface_metadata(table, legacy_features)
         chunk_index = episode_index // CHUNKS_SIZE
         out_path = output_root / "data" / f"chunk-{chunk_index:03d}" / f"episode_{episode_index:06d}.parquet"
         out_path.parent.mkdir(parents=True, exist_ok=True)
