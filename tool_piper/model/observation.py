@@ -56,9 +56,12 @@ def build_piper_observation(state: Any, top_image: Any, wrist_image: Any, prompt
 
 def load_lerobot_dataset(repo_id: str, root: Path | None = None):
     try:
-        from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
-    except Exception as exc:
-        raise RuntimeError("LeRobot is required to load model observations.") from exc
+        from lerobot.datasets.lerobot_dataset import LeRobotDataset
+    except Exception:
+        try:
+            from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
+        except Exception as exc:
+            raise RuntimeError("LeRobot is required to load model observations.") from exc
     return LeRobotDataset(repo_id, root=root, download_videos=False)
 
 
@@ -69,7 +72,7 @@ def _load_local_sample(root: Path, frame_index: int) -> dict[str, Any]:
         raise RuntimeError("pyarrow is required to read local LeRobot parquet files.") from exc
 
     remaining = int(frame_index)
-    files = sorted((root / "data").glob("chunk-*/episode_*.parquet"))
+    files = sorted((root / "data").glob("chunk-*/*.parquet"))
     if not files:
         raise FileNotFoundError(f"No LeRobot parquet files found under {root / 'data'}")
     for path in files:

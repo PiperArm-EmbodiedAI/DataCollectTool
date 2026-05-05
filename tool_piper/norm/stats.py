@@ -41,7 +41,7 @@ def _load_local_arrays(
     except Exception as exc:
         raise RuntimeError("pyarrow is required to read local LeRobot parquet files.") from exc
 
-    files = sorted((root / "data").glob("chunk-*/episode_*.parquet"))
+    files = sorted((root / "data").glob("chunk-*/*.parquet"))
     if not files:
         raise FileNotFoundError(f"No LeRobot parquet files found under {root / 'data'}")
 

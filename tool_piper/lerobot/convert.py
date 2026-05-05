@@ -53,7 +53,7 @@ def fix_parquet_sequence_metadata(dataset_root: Path, cancel_check: Callable[[],
     except Exception as exc:
         raise RuntimeError("pyarrow is required to patch LeRobot parquet metadata.") from exc
 
-    for path in sorted((Path(dataset_root) / "data").glob("chunk-*/episode_*.parquet")):
+    for path in sorted((Path(dataset_root) / "data").glob("chunk-*/*.parquet")):
         if cancel_check is not None:
             cancel_check()
         table = pq.read_table(path)
