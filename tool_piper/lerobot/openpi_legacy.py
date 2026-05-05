@@ -137,12 +137,25 @@ def _episode_stats(row: dict[str, Any]) -> dict[str, Any]:
 
 
 def _legacy_hf_features(features: dict[str, Any]) -> dict[str, Any]:
-    legacy = json.loads(json.dumps(_clean_json(features)))
-    for key in (LEROBOT_STATE_KEY, LEROBOT_ACTION_KEY):
-        feature = legacy.get(key)
-        if isinstance(feature, dict) and feature.get("_type") == "List":
-            feature["_type"] = "Sequence"
-    return legacy
+    return {
+        LEROBOT_TOP_KEY: {"_type": "Image"},
+        LEROBOT_WRIST_KEY: {"_type": "Image"},
+        LEROBOT_STATE_KEY: {
+            "feature": {"dtype": "float32", "_type": "Value"},
+            "length": STATE_DIM,
+            "_type": "Sequence",
+        },
+        LEROBOT_ACTION_KEY: {
+            "feature": {"dtype": "float32", "_type": "Value"},
+            "length": ACTION_DIM,
+            "_type": "Sequence",
+        },
+        "timestamp": {"dtype": "float32", "_type": "Value"},
+        "frame_index": {"dtype": "int64", "_type": "Value"},
+        "episode_index": {"dtype": "int64", "_type": "Value"},
+        "index": {"dtype": "int64", "_type": "Value"},
+        "task_index": {"dtype": "int64", "_type": "Value"},
+    }
 
 
 def _patch_table_huggingface_metadata(table: Any, features: dict[str, Any]) -> Any:
