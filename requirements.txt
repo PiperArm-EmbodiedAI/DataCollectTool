@@ -1,0 +1,9 @@
+numpy
+opencv-python
+pyarrow
+pandas
+tqdm
+msgpack
+websockets
+lerobot
+PySide6

@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Data and generated outputs
+data/raw/
+data/lerobot/
+data/assets/
+data/outputs/
+data/packages/
+*.mp4
+*.avi
+*.parquet
+*.zip
+*.tar
+*.tar.gz
+
+# Model/cache artifacts
+.hf_cache/
+.cache/
+wandb/
+checkpoints/
+outputs/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tool-piper"
+version = "0.1.0"
+description = "Standalone Piper data collection and processing toolchain"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "opencv-python",
+    "pyarrow",
+    "pandas",
+    "tqdm",
+    "msgpack",
+    "websockets",
+    "lerobot",
+]
+
+[project.optional-dependencies]
+gui = ["PySide6"]
+
+[project.scripts]
+tool-piper = "tool_piper.cli:main"
+tool-piper-gui = "tool_piper.gui.app:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tool_piper*"]
