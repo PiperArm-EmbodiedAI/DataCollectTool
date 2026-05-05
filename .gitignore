@@ -12,11 +12,21 @@ venv/
 env/
 
 # Data and generated outputs
-data/raw/
-data/lerobot/
-data/assets/
-data/outputs/
-data/packages/
+data/raw/*
+!data/raw/.gitkeep
+
+data/lerobot/*
+!data/lerobot/.gitkeep
+
+data/assets/*
+!data/assets/.gitkeep
+
+data/outputs/*
+!data/outputs/.gitkeep
+
+data/packages/*
+!data/packages/.gitkeep
+
 *.mp4
 *.avi
 *.parquet
